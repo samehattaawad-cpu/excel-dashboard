@@ -1,0 +1,34 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+st.set_page_config(page_title="لوحة تحكم تحليل الإكسيل", page_icon="📊", layout="wide")
+
+st.title("📊 لوحة المؤشرات والتحليلات التفاعلية")
+st.write("قم برفع ملف الإكسيل الخاص بك لتحويله فوراً إلى رسومات بيانية تفاعلية واحترافية.")
+
+uploaded_file = st.file_uploader("اختر ملف الإكسيل (Excel File)", type=["xlsx", "xls"])
+
+if uploaded_file is not None:
+    df = pd.read_excel(uploaded_file)
+    st.success("تم رفع الملف وقراءته بنجاح!")
+    st.subheader("معاينة البيانات الأساسية:")
+    st.dataframe(df.head())
+    
+    numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+    all_cols = df.columns.tolist()
+    
+    if len(numeric_cols) > 0 and len(all_cols) > 1:
+        st.subheader("📈 التفاعل والرسومات البيانية")
+        col1, col2 = st.columns(2)
+        with col1:
+            x_axis = st.selectbox("اختر محور السينات (X-axis):", all_cols)
+        with col2:
+            y_axis = st.selectbox("اختر محور الصادات (Y-axis - القيم):", numeric_cols)
+            
+        fig = px.bar(df, x=x_axis, y=y_axis, title=f"تحليل {y_axis} حسب {x_axis}", template="plotly_white")
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("الملف يحتاج لأعمدة رقمية ونصية لعرض الرسوم البيانية بدقة.")
+else:
+    st.info("الرجاء رفع ملف إكسيل (.xlsx) للبدء في العرض.")
